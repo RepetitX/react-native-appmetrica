@@ -102,6 +102,10 @@ export default {
         }
     },
 
+    reportUserProfileNotificationsEnabled(state) {
+        AppMetrica.reportUserProfileNotificationsEnabled(state);
+    },
+
     reportReferralUrl(referralUrl: string) {
         AppMetrica.reportReferralUrl(referralUrl);
     },

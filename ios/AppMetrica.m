@@ -60,6 +60,17 @@ RCT_EXPORT_METHOD(reportEvent:(NSString *)eventName:(NSDictionary *)attributes)
     }
 }
 
+RCT_EXPORT_METHOD(reportUserProfileNotificationsEnabled:(BOOL) state)
+{
+    YMMMutableUserProfile *profile = [[YMMMutableUserProfile alloc] init];
+    id<YMMNotificationsEnabledAttribute> attribute = [YMMProfileAttribute notificationsEnabled];
+    [profile apply:[attribute withValue:state]];
+    
+    [YMMYandexMetrica reportUserProfile:[profile copy] onFailure:^(NSError *error) {
+        NSLog(@"Error: %@", error);
+    }];
+}
+
 RCT_EXPORT_METHOD(reportUserProfileCustomAttributes:(NSArray *)attributes)
 {
     YMMMutableUserProfile *profile = [[YMMMutableUserProfile alloc] init];

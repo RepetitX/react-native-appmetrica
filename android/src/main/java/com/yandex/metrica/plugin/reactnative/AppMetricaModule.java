@@ -94,6 +94,15 @@ public class AppMetricaModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void reportUserProfileNotificationsEnabled(Boolean state) {
+        UserProfile userProfile = UserProfile.newBuilder()
+                .apply(Attribute.notificationsEnabled().withValue(state))
+                .build();
+
+        YandexMetrica.reportUserProfile(userProfile);
+    }
+
+    @ReactMethod
     public void reportUserProfileCustomAttributes(ReadableMap attributes) {
         UserProfile.Builder userProfileBuilder = UserProfile.newBuilder();
         ReadableMapKeySetIterator iterator = attributes.keySetIterator();
