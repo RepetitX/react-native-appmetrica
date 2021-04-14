@@ -60,6 +60,33 @@ RCT_EXPORT_METHOD(reportEvent:(NSString *)eventName:(NSDictionary *)attributes)
     }
 }
 
+RCT_EXPORT_METHOD(reportUserProfileCustomAttributes:(NSArray *)attributes)
+{
+    YMMMutableUserProfile *profile = [[YMMMutableUserProfile alloc] init];
+    
+    for (NSDictionary *property in attributes) {
+        NSString *key = [property valueForKey:@"key"];
+        
+        if ([[property valueForKey:@"type"] isEqualToString:@"number"]) {
+            double value = [[property objectForKey:@"value"] doubleValue];
+            id<YMMCustomNumberAttribute> attribute = [YMMProfileAttribute customNumber:key];
+            [profile apply:[attribute withValue:value]];
+        } else if ([[property valueForKey:@"type"] isEqualToString:@"boolean"]) {
+            BOOL value = [[property objectForKey:@"value"] boolValue];
+            id<YMMCustomBoolAttribute> attribute = [YMMProfileAttribute customBool:key];
+            [profile apply:[attribute withValue:value]];
+        } else if ([[property valueForKey:@"type"] isEqualToString:@"string"]) {
+            NSString *value = [[property objectForKey:@"value"] stringValue];
+            id<YMMCustomStringAttribute> attribute = [YMMProfileAttribute customString:key];
+            [profile apply:[attribute withValue:value]];
+        }
+    }
+    
+    [YMMYandexMetrica reportUserProfile:[profile copy] onFailure:^(NSError *error) {
+        NSLog(@"Error: %@", error);
+    }];
+}
+
 RCT_EXPORT_METHOD(reportReferralUrl:(NSString *)referralUrl)
 {
     [YMMYandexMetrica reportReferralUrl:[NSURL URLWithString:referralUrl]];

@@ -16,8 +16,13 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
+import com.facebook.react.bridge.ReadableType;
 import com.yandex.metrica.YandexMetrica;
+import com.yandex.metrica.profile.Attribute;
+import com.yandex.metrica.profile.UserProfile;
 
 public class AppMetricaModule extends ReactContextBaseJavaModule {
 
@@ -86,6 +91,33 @@ public class AppMetricaModule extends ReactContextBaseJavaModule {
         } else {
             YandexMetrica.reportEvent(eventName, attributes.toHashMap());
         }
+    }
+
+    @ReactMethod
+    public void reportUserProfileCustomAttributes(ReadableMap attributes) {
+        UserProfile.Builder userProfileBuilder = UserProfile.newBuilder();
+        ReadableMapKeySetIterator iterator = attributes.keySetIterator();
+
+        while (iterator.hasNextKey()) {
+            String key = iterator.nextKey();
+            ReadableType type = attributes.getType(key);
+
+            switch (type) {
+                case Boolean:
+                    userProfileBuilder.apply(Attribute.customBoolean(key).withValue(attributes.getBoolean(key)));
+                    break;
+                case Number:
+                    userProfileBuilder.apply(Attribute.customNumber(key).withValue(attributes.getDouble(key)));
+                    break;
+                case String:
+                    userProfileBuilder.apply(Attribute.customString(key).withValue(attributes.getString(key)));
+                    break;
+            }
+        }
+
+        UserProfile userProfile = userProfileBuilder.build();
+
+        YandexMetrica.reportUserProfile(userProfile);
     }
 
     @ReactMethod
