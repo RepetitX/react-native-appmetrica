@@ -70,8 +70,8 @@ export default {
         AppMetrica.reportAppOpen(deeplink);
     },
 
-    reportError(error: string, reason: Object) {
-        AppMetrica.reportError(error);
+    reportError(id: string, message: string, details: Object) {
+        AppMetrica.reportError(id, message, JSON.stringify(details));
     },
 
     reportEvent(eventName: string, attributes: ?Object = null) {
@@ -86,7 +86,7 @@ export default {
                 const type = typeof customAttributes[key];
 
                 if (type !== 'number' && type !== 'boolean' && type !== 'string') continue;
-                
+
                 preparedAttributes.push({
                     key,
                     type,

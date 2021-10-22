@@ -11,6 +11,8 @@ package com.yandex.metrica.plugin.reactnative;
 import android.app.Activity;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -23,6 +25,9 @@ import com.facebook.react.bridge.ReadableType;
 import com.yandex.metrica.YandexMetrica;
 import com.yandex.metrica.profile.Attribute;
 import com.yandex.metrica.profile.UserProfile;
+
+import org.json.JSONObject;
+import org.json.JSONException;
 
 public class AppMetricaModule extends ReactContextBaseJavaModule {
 
@@ -76,13 +81,15 @@ public class AppMetricaModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void reportError(String message) {
-        try {
-            Integer.valueOf("00xffWr0ng");
-        } catch (Throwable error) {
-            YandexMetrica.reportError(message, error);
+    public void reportError(String errorId, String message, @Nullable String params) {
+        if (params != null) {
+            YandexMetrica.reportError(errorId, message, new Throwable(params));
+        }
+        else {
+            YandexMetrica.reportError(errorId, message, new Throwable());
         }
     }
+
 
     @ReactMethod
     public void reportEvent(String eventName, ReadableMap attributes) {
@@ -167,5 +174,43 @@ public class AppMetricaModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setUserProfileID(String userProfileID) {
         YandexMetrica.setUserProfileID(userProfileID);
+    }
+
+    private String convertReadableMapToJson(final ReadableMap readableMap) {
+        ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
+        JSONObject json = new JSONObject();
+
+        try {
+            while (iterator.hasNextKey()) {
+                String key = iterator.nextKey();
+
+                switch (readableMap.getType(key)) {
+                    case Null:
+                        json.put(key, null);
+                        break;
+                    case Boolean:
+                        json.put(key, readableMap.getBoolean(key));
+                        break;
+                    case Number:
+                        json.put(key, readableMap.getDouble(key));
+                        break;
+                    case String:
+                        json.put(key, readableMap.getString(key));
+                        break;
+                    case Array:
+                        json.put(key, readableMap.getArray(key));
+                        break;
+                    case Map:
+                        json.put(key, convertReadableMapToJson(readableMap.getMap(key)));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        } catch (Exception ex) {
+            Log.d(TAG, "convertReadableMapToJson fail: " + ex);
+        }
+
+        return json.toString();
     }
 }

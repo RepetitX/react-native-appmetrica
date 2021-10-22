@@ -42,9 +42,18 @@ RCT_EXPORT_METHOD(reportAppOpen:(NSString *)deeplink)
     [YMMYandexMetrica handleOpenURL:[NSURL URLWithString:deeplink]];
 }
 
-RCT_EXPORT_METHOD(reportError:(NSString *)message) {
-    NSException *exception = [[NSException alloc] initWithName:message reason:nil userInfo:nil];
-    [YMMYandexMetrica reportError:message exception:exception onFailure:NULL];
+RCT_EXPORT_METHOD(reportError:(NSString *)errorId
+                  message:(NSString *)message
+                  details:(NSString *)details) {
+
+    NSData *data = [details dataUsingEncoding:NSUTF8StringEncoding];
+    id params = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+
+    YMMError *error = [YMMError errorWithIdentifier:errorId
+                                            message:message
+                                         parameters:params
+                                    ];
+    [YMMYandexMetrica reportError:error onFailure:nil];
 }
 
 RCT_EXPORT_METHOD(reportEvent:(NSString *)eventName:(NSDictionary *)attributes)
@@ -65,7 +74,7 @@ RCT_EXPORT_METHOD(reportUserProfileNotificationsEnabled:(BOOL) state)
     YMMMutableUserProfile *profile = [[YMMMutableUserProfile alloc] init];
     id<YMMNotificationsEnabledAttribute> attribute = [YMMProfileAttribute notificationsEnabled];
     [profile apply:[attribute withValue:state]];
-    
+
     [YMMYandexMetrica reportUserProfile:[profile copy] onFailure:^(NSError *error) {
         NSLog(@"Error: %@", error);
     }];
@@ -74,10 +83,10 @@ RCT_EXPORT_METHOD(reportUserProfileNotificationsEnabled:(BOOL) state)
 RCT_EXPORT_METHOD(reportUserProfileCustomAttributes:(NSArray *)attributes)
 {
     YMMMutableUserProfile *profile = [[YMMMutableUserProfile alloc] init];
-    
+
     for (NSDictionary *property in attributes) {
         NSString *key = [property valueForKey:@"key"];
-        
+
         if ([[property valueForKey:@"type"] isEqualToString:@"number"]) {
             double value = [[property objectForKey:@"value"] doubleValue];
             id<YMMCustomNumberAttribute> attribute = [YMMProfileAttribute customNumber:key];
@@ -92,7 +101,7 @@ RCT_EXPORT_METHOD(reportUserProfileCustomAttributes:(NSArray *)attributes)
             [profile apply:[attribute withValue:value]];
         }
     }
-    
+
     [YMMYandexMetrica reportUserProfile:[profile copy] onFailure:^(NSError *error) {
         NSLog(@"Error: %@", error);
     }];
