@@ -71,7 +71,7 @@ export default {
     },
 
     reportError(id: string, message: string, details: Object) {
-        AppMetrica.reportError(id, message, JSON.stringify(details));
+        AppMetrica.reportError(id, message, Platform.OS === 'android' ? details : JSON.stringify(details));
     },
 
     reportEvent(eventName: string, attributes: ?Object = null) {
