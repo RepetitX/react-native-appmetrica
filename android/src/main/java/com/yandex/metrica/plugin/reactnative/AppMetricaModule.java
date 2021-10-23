@@ -81,15 +81,14 @@ public class AppMetricaModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void reportError(String errorId, String message, @Nullable String params) {
+    public void reportError(String errorId, String message, @Nullable ReadableMap params) {
         if (params != null) {
-            YandexMetrica.reportError(errorId, message, new Throwable(params));
+            YandexMetrica.reportError(errorId, message, new Throwable(convertReadableMapToJson(params)));
         }
         else {
             YandexMetrica.reportError(errorId, message, new Throwable());
         }
     }
-
 
     @ReactMethod
     public void reportEvent(String eventName, ReadableMap attributes) {
