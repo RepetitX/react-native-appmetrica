@@ -22,7 +22,6 @@ type AppMetricaConfig = {
     statisticsSending?: boolean,
     preloadInfo?: PreloadInfo,
     // Only Android
-    installedAppCollecting?: boolean,
     maxReportsInDatabaseCount?: number,
     nativeCrashReporting?: boolean,
     // Only iOS
